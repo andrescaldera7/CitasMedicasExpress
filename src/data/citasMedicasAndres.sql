@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: localhost
--- Tiempo de generación: 03-07-2025 a las 09:11:38
+-- Tiempo de generación: 05-07-2025 a las 01:05:20
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -70,6 +70,19 @@ CREATE TABLE `registro_medico` (
 -- --------------------------------------------------------
 
 --
+-- Estructura de tabla para la tabla `tokens_expirados`
+--
+
+CREATE TABLE `tokens_expirados` (
+  `token` varchar(400) NOT NULL,
+  `tipos` enum('jwt','refresh') NOT NULL,
+  `expiracion` datetime NOT NULL,
+  `usuario_id` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Estructura de tabla para la tabla `usuarios`
 --
 
@@ -78,7 +91,8 @@ CREATE TABLE `usuarios` (
   `nombres` varchar(50) NOT NULL,
   `apellidos` varchar(50) NOT NULL,
   `email` varchar(70) NOT NULL,
-  `password` varchar(200) NOT NULL,
+  `cedula` varchar(10) NOT NULL,
+  `contraseña` varchar(200) NOT NULL,
   `roles` enum('admin','doctor') NOT NULL DEFAULT 'doctor'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -90,6 +104,7 @@ CREATE TABLE `usuarios` (
 -- Indices de la tabla `citas`
 --
 ALTER TABLE `citas`
+  ADD PRIMARY KEY (`id_citas`),
   ADD KEY `doctor_fk` (`id_doctor`),
   ADD KEY `paciente_fk` (`id_paciente`);
 
@@ -109,15 +124,29 @@ ALTER TABLE `registro_medico`
   ADD KEY `paciente_registro_fk` (`id_paciente`);
 
 --
+-- Indices de la tabla `tokens_expirados`
+--
+ALTER TABLE `tokens_expirados`
+  ADD PRIMARY KEY (`token`),
+  ADD KEY `usuario_token_fk` (`usuario_id`);
+
+--
 -- Indices de la tabla `usuarios`
 --
 ALTER TABLE `usuarios`
   ADD PRIMARY KEY (`id_usuario`),
-  ADD UNIQUE KEY `email` (`email`);
+  ADD UNIQUE KEY `email` (`email`),
+  ADD UNIQUE KEY `cedula` (`cedula`);
 
 --
 -- AUTO_INCREMENT de las tablas volcadas
 --
+
+--
+-- AUTO_INCREMENT de la tabla `citas`
+--
+ALTER TABLE `citas`
+  MODIFY `id_citas` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `pacientes`
@@ -153,6 +182,12 @@ ALTER TABLE `citas`
 --
 ALTER TABLE `registro_medico`
   ADD CONSTRAINT `paciente_registro_fk` FOREIGN KEY (`id_paciente`) REFERENCES `pacientes` (`id_paciente`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Filtros para la tabla `tokens_expirados`
+--
+ALTER TABLE `tokens_expirados`
+  ADD CONSTRAINT `usuario_token_fk` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id_usuario`) ON DELETE CASCADE ON UPDATE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
